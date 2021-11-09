@@ -49,6 +49,7 @@ namespace App1
                         FullCopyFileName = FileLocation + "\\" + CopyFile;
                         System.IO.File.Copy(FilePath, FullCopyFileName, false);
                     }
+                    
                     Form2 newform2 = new Form2(FullCopyFileName);
                     newform2.Show();
                 }

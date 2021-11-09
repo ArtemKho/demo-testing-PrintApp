@@ -11,5 +11,6 @@ namespace App1
     class Class1
     {
         string a;
+        int a;
     }
 }

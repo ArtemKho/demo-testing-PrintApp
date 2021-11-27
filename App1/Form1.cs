@@ -23,65 +23,31 @@ namespace App1
         public string FilePath;
         private void button1_Click(object sender, EventArgs e)
         {
-            string OnlyFileName;
-            string CopyFile;
-            string FileLocation;
-            string FullCopyFileName;
-            string FileExtension;
             using (OpenFileDialog OFD = new OpenFileDialog())
             {
                 OFD.InitialDirectory = "C:\\Users\\Admin\\Desktop";
-                OFD.Filter = "pdf files (*.pdf)|*.pdf|docx files (*.docx)|*.docx|doc files (*.doc)|*.doc|txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                OFD.Filter = "All files (*.*)|*.*|docx files (*.docx)|*.docx|doc files (*.doc)|*.doc|txt files (*.txt)|*.txt|pdf files (*.pdf)|*.pdf";
                 OFD.RestoreDirectory = true;
 
                 if (OFD.ShowDialog() == DialogResult.OK)
                 {
                     FilePath = OFD.FileName;
-                    //OnlyFileName = System.IO.Path.GetFileName(FilePath);
-                    //if (OnlyFileName.Substring(0, 3) == "PP ")
-                    //{
-                    //    FullCopyFileName = FilePath;
-                    //}
-                    //else
-                    //{
-                    //    CopyFile = "PP " + OnlyFileName;
-                    //    FileLocation = System.IO.Path.GetDirectoryName(FilePath);
-                    //    FullCopyFileName = FileLocation + "\\" + CopyFile;
-                    //    if (File.Exists(FullCopyFileName))
-                    //    {
-                    //        try
-                    //        {
-                    //            File.Delete(FullCopyFileName);
-                    //            System.IO.File.Copy(FilePath, FullCopyFileName);
-                    //        }
-                    //        catch(System.Exception ex) 
-                    //        {
-                    //            MessageBox.Show(ex.Message);
-                    //            MessageBox.Show("Удалите файл:", FullCopyFileName);
-                    //        }
-
-                    //    }
-                    //    else
-                    //    {
-                    //        System.IO.File.Copy(FilePath, FullCopyFileName);
-                    //    }
-                    //}
-                    MessageBox.Show(FilePath);
+                    
                     label1.Text = "Выбранный файл:" + FilePath;
-                    //Form2 newform2 = new Form2(FilePath);
-                    //newform2.Show();
                 }
             }
 
         }
 
         public string[] filename;
+        public string flagDrop;
       
         void panel1_DragDrop(object sender, DragEventArgs e)
         {
             filename = (string[])e.Data.GetData(DataFormats.FileDrop);
             label1.Text = "Выбранный файл:" + filename[0];
             button2.Text = "Распечатать";
+            flagDrop = label1.Text;
         }
 
         void panel1_DragEnter(object sender, DragEventArgs e)
@@ -110,14 +76,13 @@ namespace App1
             {
                 MessageBox.Show("Файл не был выбран");
             }
-            else if (label1.Text == "Выбранный файл:" + filename[0])
+            else if (label1.Text == flagDrop)
             {
                 string exten = Path.GetExtension(filename[0]);
                 if ((exten == ".pdf") || (exten == ".doc") || (exten == ".docx") || (exten == ".txt"))
                 {
                     MyFile myfile = new MyFile(filename[0]);
                     myfile.PrintPDF(myfile.CopyFile());
-
                 }
                 else
                 {
@@ -132,7 +97,6 @@ namespace App1
                 {
                     MyFile myfile = new MyFile(FilePath);
                     myfile.PrintPDF(myfile.CopyFile());
-
                 }
                 else
                 {

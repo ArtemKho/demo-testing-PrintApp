@@ -14,6 +14,8 @@ using PdfSharp;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
+using MigraDoc.DocumentObjectModel;
+using MigraDoc.Rendering; 
 
 
 namespace App1
@@ -22,11 +24,13 @@ namespace App1
     {
         public string Filepath;
 
+        //Конструктор класса MyFile
         public MyFile(string path)
         {
             Filepath = path; 
         }
 
+        //Метод открывеает диалоговое окно печати,отправив адрес файла
         public void PrintPDF(string Filepath)
         {
 
@@ -51,6 +55,7 @@ namespace App1
             }
         }
 
+        //Метод конвертирует входной docx файл и возвращает путь к пдф файлу
         public string Word2PDF(string path)
         {
             Microsoft.Office.Interop.Word.Application word = new Microsoft.Office.Interop.Word.Application();
@@ -63,13 +68,13 @@ namespace App1
 
             Object filename = (Object)wordFile.FullName;
 
-            Document doc = word.Documents.Open(ref filename, ref oMissing, 
+            Microsoft.Office.Interop.Word.Document doc = word.Documents.Open(ref filename, ref oMissing, 
                 ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing,
                 ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing,
                 ref oMissing, ref oMissing, ref oMissing, ref oMissing);
             doc.Activate();
 
-            object outputFilename = wordFile.Directory + "\\" + "DWCopy " + wordFile.Name.Replace(".docx", ".pdf");
+            object outputFilename = wordFile.Directory + "\\" + "DWCopy " + wordFile.Name.Replace(".docx", ".pdf");  //Изменяем путь пдф файла
             object fileformat = WdSaveFormat.wdFormatPDF;
             
             doc.SaveAs2(ref outputFilename,
@@ -79,18 +84,16 @@ namespace App1
                 ref oMissing, ref oMissing, ref oMissing, ref oMissing);
             
             object savechanges = WdSaveOptions.wdSaveChanges;
-            ((Document)doc).Close(ref savechanges, ref oMissing, ref oMissing);
+            ((Microsoft.Office.Interop.Word.Document)doc).Close(ref savechanges, ref oMissing, ref oMissing);
             doc = null;
 
             ((_Application)word).Quit(ref oMissing, ref oMissing, ref oMissing);
             word = null;
 
-            MessageBox.Show("The file has been converted to PDF");
-            MessageBox.Show(outputFilename.ToString());
-
             return outputFilename.ToString();
         }
 
+        //Метод конвертирует входной txt файл в pdf и возвращает путь к pdf файлу
         public string TXT2PDF(string path)
         {
             try
@@ -103,14 +106,14 @@ namespace App1
                 pdf.Info.Title = "TXT to PDF";
                 PdfPage pdfPage = pdf.AddPage();
                 XGraphics graph = XGraphics.FromPdfPage(pdfPage);
-                XFont font = new XFont("Verdana", 20, XFontStyle.Regular);
+                XFont font = new XFont("Arial", 16, XFontStyle.Regular);
 
                 while (true)
                 {
                     line = readFile.ReadLine();
                     if (line == null)
                     {
-                        break; // TODO: might not be correct. Was : Exit While
+                        break; 
                     }
                     else
                     {
@@ -128,6 +131,7 @@ namespace App1
                 readFile = null;
                 Process.Start(pdfFilename);
                 return pdfFilename;
+
             }
             catch (Exception ex)
             {
@@ -136,7 +140,45 @@ namespace App1
             }
 
         }
-        
+
+        public string CreatePDFFromTxt(string textfilefullpath)
+        {
+            List<string> textFileLines = new List<string>();
+            using (StreamReader sr = new StreamReader(textfilefullpath))
+            {
+                while (!sr.EndOfStream)
+                {
+                    textFileLines.Add(sr.ReadLine());
+                }
+            }
+
+            MigraDoc.DocumentObjectModel.Document doc = new MigraDoc.DocumentObjectModel.Document();
+            MigraDoc.DocumentObjectModel.Section section = doc.AddSection();
+
+
+            MigraDoc.DocumentObjectModel.Font font = new MigraDoc.DocumentObjectModel.Font("Arial", 20);
+            font.Bold = false;
+
+            foreach (string line in textFileLines)
+            {
+                Console.WriteLine(line);
+                MigraDoc.DocumentObjectModel.Paragraph paragraph = section.AddParagraph();
+                paragraph.AddFormattedText(line, font);
+
+            }
+
+            string FileName = Path.GetFileName(textfilefullpath).Replace(".txt", ".pdf");
+            string pdfFilename = Path.GetDirectoryName(textfilefullpath) + "\\" + "DWCopy " + FileName;
+
+            PdfDocumentRenderer renderer = new PdfDocumentRenderer(true);
+            renderer.Document = doc;
+            renderer.RenderDocument();
+            renderer.Save(pdfFilename);
+            return pdfFilename;
+
+        }
+
+        //Метод копирует pdf файл в новый pdf файл,если такой файл уже есть,то перезаписывает и конвкртирует txt и docx в pdf
         public string CopyFile()
         {
             string FullCopyFileName;
@@ -178,6 +220,7 @@ namespace App1
             
         }
 
+        //Метод возвращает путь к pdf  файлу   
        public string Convert2PDF(string path)
         {
             if (Path.GetExtension(path) == ".docx")
@@ -186,12 +229,14 @@ namespace App1
             }
             else if (Path.GetExtension(path) == ".txt")
             {
-                return TXT2PDF(path);
+                return CreatePDFFromTxt(path);
             }
             else
             {
                 return path;
             }
         }
+
+       
     }
 }

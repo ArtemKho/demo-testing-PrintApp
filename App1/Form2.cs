@@ -7,59 +7,52 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
-using System.Diagnostics; 
+using System.Drawing.Printing;
+using System.Runtime.InteropServices;
+
 
 namespace App1
 {
     public partial class Form2 : Form
     {
-        public string path;
-        public void PrintPDF(string Filepath)
+
+        private void listAllPrinters()
         {
 
-            using (PrintDialog Dialog = new PrintDialog())
+            foreach (var item in PrinterSettings.InstalledPrinters)
             {
-                Dialog.ShowDialog();
-
-                ProcessStartInfo printProcessInfo = new ProcessStartInfo();
-                printProcessInfo.Verb = "print";
-                printProcessInfo.CreateNoWindow = true;
-                printProcessInfo.FileName = Filepath;
-                printProcessInfo.WindowStyle = ProcessWindowStyle.Hidden;
-
-                Process printProcess = new Process();
-                printProcess.StartInfo = printProcessInfo;
-                printProcess.Start();
-                printProcess.WaitForInputIdle();
-                if (printProcess.CloseMainWindow() == true)
-                {
-                    printProcess.Kill();
-                }
+                this.listBox1.Items.Add(item.ToString());
             }
         }
-
-        public Form2(string Filepath)
+        string pname;
+        private void listBox1_SelectedValueChanged(object sender, EventArgs e)
         {
-            path = Filepath;
+            pname = this.listBox1.SelectedItem.ToString();
+
+            myPrinters.SetDefaultPrinter(pname);
+            
+
+        }
+        string Filepath;
+        public Form2(string path)
+        {
+            Filepath = path;
             InitializeComponent();
-            this.label2.Text = Filepath;
+            listAllPrinters();
+        }
+
+        public static class myPrinters
+        {
+            [DllImport("winspool.drv", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern bool SetDefaultPrinter(string name);
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            this.Close();
-            PrintPDF(path);
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
-        private void button2_Click_1(object sender, EventArgs e)
-        {
-            this.Close();
+            
+            PrintDocument D = new PrintDocument();
+            D.DocumentName = Filepath;
+            D.Print();
         }
     }
 }
